@@ -33,7 +33,7 @@ def create_token_list(tokens)
 end
 
 
-src = File.new("/home/chaitanya/projects/yaccToGrammar/DefaultRubyBeaverParser.y")
+src = File.new("/home/chaitanya/projects/jruby/src/org/jruby/parser/JavaSignatureParser.y")
 dest = File.new("#{ARGV[1]}.grammar", 'w')
 input = src.read
 #split the input into 3 sections as per convention of yacc file
@@ -123,17 +123,13 @@ section2.each do |line|
     result.gsub! ">", ""
     result.gsub! ",", ""
     result = result.split
-    if types[result[1].to_sym]
+    if not types[result[1].to_sym]
+      types[result[1].to_sym] = []
+    end
       (2..result.length-1).each do |index|
+        
         types[result[1].to_sym] += [result[index].to_s]
       end
-    else
-
-      (2..result.length-1).each do |index|
-
-        types[result[1].to_sym] = [result[index].to_s]
-      end
-    end
   elsif
     if line.include? "%nonassoc"
       line.gsub! "%nonassoc", ''
@@ -235,19 +231,24 @@ class RecurseDescently
   end
 
   def eval val
-    unless (val.include? '"' or val.include? "'" or val.strip == "$$")
-      if val.match(/\$(<.+>)?/).to_s != '' 
-        val.gsub!(val.match(/\$(<.+>)?/).to_s , "arg")
-      end
+    if val.strip == "$$"
+      @dest.write "#{@type} result = new #{@type};"
+      @return_flag = 1
+      return_value
     else
-      if val.strip == "$$"
-        @dest.write "#{@type} result = new #{@type};"
-        @return_flag = 1
-        return_value
+      
+      while (val.include? "$")
+        if val.match(/\$<.+>\$/).to_s != ''
+          val.gsub!(val.match(/\$<.+>\$/).to_s, "result")
+        elsif val.match(/\$(<.+>)?/).to_s != '' 
+          val.gsub!(val.match(/\$(<.+>)?/).to_s , "arg")
+        end
       end
     end
+    
     val
   end
+
 
   def check_end_of_action
     if @section3[@index+1] == ':'
