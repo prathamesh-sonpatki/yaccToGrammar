@@ -1,0 +1,13 @@
+* y2g.rb
+  1) %prec.arg<digit> -> it should not increment argIndex with %prec
+     - Status - Solved
+  2) tQUESTION? -> it should be tQUESTION, change in DefaultRubyBeaverParser.y
+     - Status - Solved
+  3) %prec -> it should be replaced with beaver equivalent @PRECSYM
+     - Status - Not Solved
+  4) argIndex is not getting increased properly, it should only
+     increase after code block and rhs symbol. It should be reset
+     after | and after end of production.
+     - Status - Not Solved
+  5) Stray $$ is getting printed.
+     - Status - Not Solved
