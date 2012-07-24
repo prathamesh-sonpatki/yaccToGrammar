@@ -385,9 +385,9 @@ class RecurseDescently
         else_statement
       else
         @dest.write "\n :} \n "
-        @java_flag = 0
         if @section3[@index+2] == ":" or (@section3[@index+1] and not @section3[@index+1].include?  "|" and @section3[@index+2] != "{")
           @dest.write ";\n"
+          @rhs_index = 1
           parse_yacc_g
         else
           rhs_production
@@ -424,12 +424,9 @@ class RecurseDescently
       elsif value.strip == '{'
         @rhs_index = @rhs_index + 1
         @dest.write "\n {: \n"
-        @java_flag = 1
         javacode
       elsif value.strip == '|'
-        if @java_flag != 0
           @rhs_index = 1
-        end
         @dest.write "| \n"
         rhs_production
       elsif value.include? "'" or value.include? '"'

@@ -8,6 +8,6 @@
   4) argIndex is not getting increased properly, it should only
      increase after code block and rhs symbol. It should be reset
      after | and after end of production.
-     - Status - Not Solved
+     - Status - Solved
   5) Stray $$ is getting printed.
      - Status - Solved
