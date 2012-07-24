@@ -33,7 +33,7 @@ def create_token_list(tokens)
 end
 
 
-src = File.new("/home/chaitanya/projects/jruby/src/org/jruby/parser/DefaultRubyParser.y")
+src = File.new("/home/chaitanya/projects/yaccToGrammar/DefaultRubyBeaverParser.y")
 dest = File.new("#{ARGV[1]}.grammar", 'w')
 input = src.read
 #split the input into 3 sections as per convention of yacc file
@@ -172,7 +172,6 @@ class RecurseDescently
     value = next_val
     @dest.write value + ' '
     if value.strip == "*/" or value.strip == "\n"
-      return
     else
       check_comment
     end
@@ -219,6 +218,7 @@ class RecurseDescently
     if value.strip == "/*"
       @dest.write value
       check_comment
+      return_value
     elsif value.strip == '='
       @dest.write "\n result = "
       return_value
@@ -263,6 +263,7 @@ class RecurseDescently
     if value.strip == "/*"
       @dest.write value
       check_comment
+      else_predicate
     elsif value == "}"
       @dest.write value
       if @section3[@index+1] == "if"
@@ -274,6 +275,7 @@ class RecurseDescently
       end
     else
       @dest.write eval value + ' '
+      else_predicate
     end
   end
   
@@ -282,6 +284,7 @@ class RecurseDescently
     if value.strip == "/*"
       @dest.write value
       check_comment
+      else_statement
     elsif value.strip == "else"
       @dest.write "\n"+ value + " "
       else_statement
@@ -304,6 +307,7 @@ class RecurseDescently
     if value.strip == "/*"
       @dest.write value
       check_comment
+      if_predicate
     elsif value == "}"
       @if_flag = 0
       @dest.write "\n" + value + "\n"
@@ -331,6 +335,7 @@ class RecurseDescently
     if value.strip == "/*"
       @dest.write value
       check_comment
+      if_statement
     elsif check_else
       @dest.write "else "
       else_statement
@@ -339,27 +344,28 @@ class RecurseDescently
       if_predicate
     else
       @dest.write eval value + ' '
-      if value[-1] == ';'
-        javacode
+      if value[-1] == ')'
+        if_predicate
       else
         if_statement
       end
     end
   end
-  
+
   def lookahead
-    if (@index == (@section3.length - 1) or @section3[@index+1][-1] == ':' or @section3[@index+2] == ':' or @section3[@index+2] == "{" or @section3[@index+1] == "|")  
+    if (@index == (@section3.length - 1) or @section3[@index+1][-1] == ':' or @section3[@index+2] == ':' or @section3[@index+2] == "{" or @section3[@index+1] == "|")
       true
     else
       false
     end
   end
-  
+
   def javacode
     value = next_val
     if value.strip == "/*"
       @dest.write value
       check_comment
+      javacode
     elsif value == '{'
       @dest.write(' ' + value + "\n")
       javacode
@@ -429,6 +435,9 @@ class RecurseDescently
       elsif value.include? "'" or value.include? '"'
         @dest.write value
         rhs_production
+      elsif value.strip == '%prec'
+        @dest.write(value + ' ')
+        rhs_production
       else
         @dest.write(value + ".arg#{@rhs_index} ")
         @rhs_index = @rhs_index + 1
@@ -453,6 +462,7 @@ class RecurseDescently
     if value.strip == "/*"
       @dest.write value
       check_comment
+      parse_yacc_g
     elsif value == ":"
       current_type(@section3[@index-1])
       @dest.write " = "
@@ -460,6 +470,8 @@ class RecurseDescently
       rhs_production
     elsif value[-1] == ':'
       @dest.write(value[0..-2] + " = ")
+      @rhs_index = 1
+      rhs_production
     elsif value == "{"
       @dest.write "{: \n"
       javacode
