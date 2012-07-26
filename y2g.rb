@@ -33,7 +33,7 @@ def create_token_list(tokens)
 end
 
 
-src = File.new("/home/chaitanya/projects/jruby/src/org/jruby/parser/JavaSignatureParser.y")
+src = File.new("/home/chaitanya/projects/yaccToGrammar/DefaultRubyBeaverParser.y")
 dest = File.new("#{ARGV[1]}.grammar", 'w')
 input = src.read
 #split the input into 3 sections as per convention of yacc file
@@ -62,7 +62,6 @@ count = 0
 
 section3 = section3.split ' '
 section3.delete ""
-#p section3
 embed = ""
 tokens = []
 types = {}
@@ -98,6 +97,12 @@ embed.gsub!(embed.scan(/\n\n/)[0].to_s, '')
 dest.write "\n\n%embed{:\n" + embed + "\n:};"
 @assoc = []
 
+section2.each do |arg|
+  arg.gsub!(/\/\/.*/, '')
+  arg.strip!
+end
+section2.delete ""
+p section2
 #process section2
 section2.each do |line|
   if line.scan(/\/\*.*\*\//)[0]
@@ -219,8 +224,8 @@ class RecurseDescently
       @dest.write "\n result = "
       return_value
     elsif value[-1] == ';'
-      @dest.write eval(value)
-      javacode
+      @dest.write eval(value) + "\n"
+      #javacode
     elsif value.include? '"$"'
       ruby_error_var(value)
       return_value
@@ -235,6 +240,7 @@ class RecurseDescently
       @dest.write "#{@type} result = new #{@type};"
       @return_flag = 1
       return_value
+      return ''
     else
       
       while (val.include? "$")
@@ -245,8 +251,12 @@ class RecurseDescently
         end
       end
     end
-    
-    val
+    val.strip!
+    if val[-1] == ';' 
+      return val + "\n"
+    else
+      return val
+    end
   end
 
 
@@ -354,7 +364,7 @@ class RecurseDescently
   end
 
   def lookahead
-    if (@index == (@section3.length - 1) or @section3[@index+1][-1] == ':' or @section3[@index+2] == ':' or @section3[@index+2] == "{" or @section3[@index+1] == "|")
+    if (@index == (@section3.length - 1) or @section3[@index+1][-1].strip == ':' or @section3[@index+2].strip == ':' or @section3[@index+2].strip == "{" or @section3[@index+1].strip == "|")
       true
     else
       false
@@ -370,7 +380,7 @@ class RecurseDescently
     elsif value == '{'
       @dest.write(' ' + value + "\n")
       javacode
-    elsif value == "}" and lookahead
+    elsif value.strip == "}" and lookahead
       if @return_flag == 1
         @return_flag = 0
         @dest.write "\n return new Symbol(result);"
@@ -394,14 +404,14 @@ class RecurseDescently
           rhs_production
         end
       end
-    elsif value == "}"
+    elsif value.strip == "}"
       @dest.write "\n } \n"
       javacode
     elsif value.strip == "|"
       @rhs_index = 1
       @dest.write value + "\n"
       rhs_production
-    elsif value.include? "if"
+    elsif value.strip == 'if'
       @dest.write eval value
       if_statement
       javacode
