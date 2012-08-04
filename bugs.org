@@ -1,4 +1,5 @@
-* y2g.rb
+
+* DONE y2g.rb
 * DONE %prec.arg<digit> -> it should not increment argIndex with %prec 
 * DONE tQUESTION? -> it should be tQUESTION, change in DefaultRubyBeaverParser.y 
 * TODO %prec -> it should be replaced with beaver equivalent @PRECSYM   
@@ -13,3 +14,38 @@
 * TODO $0 or arg0 bug
 
 * TODO if(().*) is being printed as if(()\n.*)
+
+* DONE New Errors
+Changes to be done in .y
+do_block1,2
+kWHILE
+compstmt KEND
+expr_value do
+compstmt KEND
+expr_vlue do
+compstmt kEND
+bosystmt kEND
+term
+bosystmt kEND
+bosystmt kEND
+f_arglist bosystmt kEND
+fname
+f_arglist bosystmt kEND
+bug -> lsh :rhs not getting translated into lhs = rhs {: .. :}
+bug -> do_block1.arg1 do_block2.arg2 do_block1.arg3 :kDO_BLOCK.arg4
+bug -> else { .. return .. } .. not working
+expr_value term
+expr opt_nl tRPAREN
+undef_list1, open_args1, do_block1 definition is missing
+
+* Symbols not used in grammar 
+1) DefaultRubyParser.y
+tLAMBEG
+tLAMBDA
+tLABEL
+tCHAR
+kDO_LAMBDA
+k__ENCODING__
+2) JavaSignatureParser.y
+Q
+QQ
